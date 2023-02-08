@@ -1,0 +1,49 @@
+# .github/workflows/release.yaml
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  releases-matrix:
+    name: Release Go Binary
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # build and publish in parallel: linux/386, linux/amd64, linux/arm64, linux/arm, windows/386, windows/amd64, windows/arm64, windows/arm, darwin/amd64
+        goos: [linux, windows]
+        goarch: ["386", amd64, arm64, arm]
+        include:
+          - goarch: amd64
+            goos: darwin
+    steps:
+      - uses: actions/checkout@v3
+      - uses: wangyoucao577/go-release-action@v1.35
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
+          extra_files: LICENSE README.md
+          md5sum: false
+
+  post-release:
+    name: Release Signed Checksums
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [releases-matrix]
+    steps:
+      - uses: MCJack123/ghaction-generate-release-hashes@v3
+        with:
+          hash-type: sha256
+          get-assets: true
+          file-name: terraform-provider-inwx_${{github.ref_name}}_SHA256SUMS
+      - name: Configure GPG Key
+        run: |
+          echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import
+          gpg --detach-sign terraform-provider-inwx_${{github.ref_name}}_SHA256SUMS
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Asset Hashes
+          path: terraform-provider-inwx_${{github.ref_name}}_SHA256SUMS*

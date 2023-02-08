@@ -33,7 +33,7 @@ jobs:
     if: ${{ always() }}
     needs: [releases-matrix]
     steps:
-      - uses: MCJack123/ghaction-generate-release-hashes@v3
+      - uses: fsoederhuyzen/ghaction-generate-release-hashes@v1.0.1
         with:
           hash-type: sha256
           get-assets: true

@@ -23,6 +23,7 @@ jobs:
           github_token: ${{ secrets.GH_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
+          asset_name: ${BINARY_NAME}_${RELEASE_TAG}_${{ matrix.goos }}_${{ matrix.goarch }}
           extra_files: LICENSE README.md
           md5sum: false
 

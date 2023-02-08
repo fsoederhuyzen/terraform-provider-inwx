@@ -28,9 +28,9 @@ jobs:
           distribution: goreleaser
           version: latest
           args: release --clean
+          signs:
+            - artifacts: checksum
+              args: [ "--batch", "-u", "{{ .Env.GPG_FINGERPRINT }}", "--output", "${signature}", "--detach-sign", "${artifact}" ]
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-        signs:
-          - artifacts: checksum
-            args: [ "--batch", "-u", "{{ .Env.GPG_FINGERPRINT }}", "--output", "${signature}", "--detach-sign", "${artifact}" ]
